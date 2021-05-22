@@ -14,8 +14,10 @@ class PrefDelegate<T>(private val defaultValue: T, private val customKey: String
     operator fun provideDelegate(
         thisRef: PrefManager,
         prop: KProperty<*>
-    ) : ReadWriteProperty<PrefManager, T>{
+    ) : ReadWriteProperty<PrefManager, T> {
+
         val key = createKey(customKey ?: prop.name, defaultValue)
+
         return object:ReadWriteProperty<PrefManager, T> {
             private var _storedValue: T? = null
 
@@ -49,8 +51,8 @@ class PrefDelegate<T>(private val defaultValue: T, private val customKey: String
         when (value) {
             is Int -> intPreferencesKey(name)
             is Long -> longPreferencesKey(name)
-            is Double -> intPreferencesKey(name)
-            is String -> intPreferencesKey(name)
+            is Double -> doublePreferencesKey(name)
+            is String -> stringPreferencesKey(name)
             is Boolean -> booleanPreferencesKey(name)
             is Float -> floatPreferencesKey(name)
             else -> error("This type can not be stored into Preferences")

@@ -4,18 +4,20 @@ import android.os.Bundle
 import android.util.Log
 import androidx.core.os.bundleOf
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.SavedStateHandle
 import ru.skillbranch.skillarticles.data.ArticleData
 import ru.skillbranch.skillarticles.data.ArticlePersonalInfo
 import ru.skillbranch.skillarticles.data.repositories.ArticleRepository
+import ru.skillbranch.skillarticles.extensions.asMap
 import ru.skillbranch.skillarticles.extensions.data.toAppSettings
 import ru.skillbranch.skillarticles.extensions.data.toArticlePersonalInfo
 import ru.skillbranch.skillarticles.extensions.format
+import ru.skillbranch.skillarticles.extensions.indexesOf
 
 class ArticleViewModel(private val articleId: String, savedStateHandle: SavedStateHandle):
     BaseViewModel<ArticleState>(ArticleState(), savedStateHandle), IArticleViewModel {
 
     private val repository = ArticleRepository
-    //private var menuIsShown = false
 
     init{
         //set custom saved state provider for non serializable or custom states
@@ -62,7 +64,7 @@ class ArticleViewModel(private val articleId: String, savedStateHandle: SavedSta
     }
 
     //load text from network
-    override fun getArticleContent(): LiveData<List<Any>?> {
+    override fun getArticleContent(): LiveData<List<String>?> {
         return repository.loadArticleContent(articleId)
     }
 
@@ -74,11 +76,6 @@ class ArticleViewModel(private val articleId: String, savedStateHandle: SavedSta
     //load data from db
     override fun getArticlePersonalInfo(): LiveData<ArticlePersonalInfo?> {
         return repository.loadArticlePersonalInfo(articleId)
-    }
-
-    //session state
-    override fun handleToggleMenu() {
-        updateState {it.copy(isShowMenu = !it.isShowMenu) }
     }
 
     //app settings
@@ -132,20 +129,9 @@ class ArticleViewModel(private val articleId: String, savedStateHandle: SavedSta
         notify(Notify.ErrorMessage(msg, "OK", null))
     }
 
-    fun hideMenu(){
-        updateState{it.copy(isShowMenu = false)}
-    }
-
-    /*fun showMenu(){
-        updateState{it.copy(isShowMenu = menuIsShown)}
-    }*/
-
-    fun handleSearchQuery(query:String?) {
-        updateState{it.copy(searchQuery = query)}
-    }
-
-    fun handleIsSearch(isSearch: Boolean) {
-        updateState{it.copy(isSearch = isSearch)}
+    //session state
+    override fun handleToggleMenu() {
+        updateState {it.copy(isShowMenu = !it.isShowMenu) }
     }
 
     override fun handleSearchMode(isSearch: Boolean) {
@@ -162,7 +148,8 @@ class ArticleViewModel(private val articleId: String, savedStateHandle: SavedSta
     }
 
     override fun handleUpResult() {
-        updateState { it.copy(searchPosition = it.searchPosition.dec()) }
+        updateState {
+            it.copy(searchPosition = it.searchPosition.dec()) }
     }
 
     override fun handleDownResult() {
@@ -191,7 +178,7 @@ data class ArticleState(
     val date: String? = null, //дата публикации
     val author: Any? = null, //актор статьи
     val poster: String? = null, //обложка статьи
-    val content: List<Any> = emptyList(), //контент
+    val content: List<String> = emptyList(), //контент
     val reviews: List<Any> = emptyList() //отзывы
 ): VMState {
     override fun toBundle(): Bundle {
@@ -217,7 +204,7 @@ data class ArticleState(
             isDarkMode = map["isDarkMode"] as Boolean,
             isSearch = map["isSearch"] as Boolean,
             searchQuery = map["searchQuery"] as String?,
-            searchResults = map["searchResult"] as List<Pair<Int,Int>>,
+            searchResults = map["searchResults"] as List<Pair<Int,Int>>,
             searchPosition = map["searchPosition"] as Int,
             shareLink = map["shareLink"] as String?,
             title = map["title"] as String?,
@@ -231,24 +218,31 @@ data class ArticleState(
         )
     }
 
-    data class BottombarData(
-        val isLike: Boolean = false, //отмечено как Like
-        val isBookmark: Boolean = false,//в закладках
-        val isShowMenu: Boolean = false,//отображается меню
-        val isSearch: Boolean = false,//режим поиска
-        val resultsCount: Int = 0,//количество найденных вхождений
-        val searchPosition: Int = 0 //текущая позиция поиска
-    )
-
-    data class SubmenuData(
-        val isShowMenu: Boolean = false, //отображается меню
-        val isBigText: Boolean = false, //шрифт увеличен
-        val isDarkMode: Boolean = false //темный режим
-    )
-
-    fun ArticleState.toBottombarData() =
-        BottombarData(isLike, isBookmark, isShowMenu, isSearch, searchResults.size, searchPosition)
-
-    fun ArticleState.toSubmenuData() = SubmenuData(isShowMenu, isBigText, isDarkMode)
-
 }
+
+data class BottombarData(
+    val isLike: Boolean = false, //отмечено как Like
+    val isBookmark: Boolean = false,//в закладках
+    val isShowMenu: Boolean = false,//отображается меню
+    val isSearch: Boolean = false,//режим поиска
+    val resultsCount: Int = 0,//количество найденных вхождений
+    val searchPosition: Int = 0 //текущая позиция поиска
+)
+
+data class SubmenuData(
+    val isShowMenu: Boolean = false, //отображается меню
+    val isBigText: Boolean = false, //шрифт увеличен
+    val isDarkMode: Boolean = false //темный режим
+)
+
+fun ArticleState.toBottombarData() =
+    BottombarData(
+        isLike,
+        isBookmark,
+        isShowMenu,
+        isSearch,
+        searchResults.size,
+        searchPosition
+    )
+
+fun ArticleState.toSubmenuData() = SubmenuData(isShowMenu, isBigText, isDarkMode)

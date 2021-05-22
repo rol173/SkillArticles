@@ -5,31 +5,34 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewAnimationUtils
-import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.doOnEnd
+import androidx.core.view.isVisible
 import com.google.android.material.shape.MaterialShapeDrawable
-import ru.skillbranch.skillarticles.R
+import ru.skillbranch.skillarticles.databinding.LayoutBottombarBinding
 import ru.skillbranch.skillarticles.ui.custom.behaviors.BottombarBehavior
+import kotlin.math.hypot
 
 class Bottombar @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : ConstraintLayout(context, attrs, defStyleAttr), CoordinatorLayout.AttachedBehavior {
-    init {
-        binding = LayoutBottombarBinding.inflate(LayoutInflater.from(context), this)
-        //View.inflate(context, R.layout.layout_bottombar, this)
-        val materialBg = MaterialShapeDrawable.createWithElevationOverlay(context)
-        materialBg.elevation = elevation
-        background = materialBg
-    }
+
+    val binding: LayoutBottombarBinding
+    var isSearchMode = false
 
     override fun getBehavior(): CoordinatorLayout.Behavior<*> {
         return BottombarBehavior()
+    }
+
+    init {
+        binding = LayoutBottombarBinding.inflate(LayoutInflater.from(context), this)
+        val materialBg = MaterialShapeDrawable.createWithElevationOverlay(context)
+        materialBg.elevation = elevation
+        background = materialBg
     }
 
     override fun onSaveInstanceState(): Parcelable? {
@@ -43,7 +46,7 @@ class Bottombar @JvmOverloads constructor(
         if (state is SavedState) {
             isSearchMode = state.ssIsSearchMode
             binding.reveal.isVisible = isSearchMode
-            binding.bottomGroup.isVisible = isSearchMode
+            binding.bottomGroup.isVisible = !isSearchMode
         }
     }
 
@@ -57,10 +60,10 @@ class Bottombar @JvmOverloads constructor(
     fun setSearchInfo(searchCount: Int = 0, position: Int = 0) {
         with(binding) {
             btnResultUp.isEnabled = searchCount > 0
-            btnResultDown.isEnabled = serachCount > 0
+            btnResultDown.isEnabled = searchCount > 0
 
             tvSearchResult.text =
-                if (serachCount == 0) "Not found" else "${position.inc()} of $searchCount"
+                if (searchCount == 0) "Not found" else "${position.inc()} of $searchCount"
 
             when (position) {
                 0 -> btnResultUp.isEnabled = false
@@ -89,7 +92,9 @@ class Bottombar @JvmOverloads constructor(
 
     private fun animateHideSearch() {
         binding.bottomGroup.isVisible = true
+
         val endRadius = hypot(width.toDouble(), height/2.toDouble())
+
         val va = ViewAnimationUtils.createCircularReveal(
             binding.reveal,
             width,
@@ -124,7 +129,7 @@ class Bottombar @JvmOverloads constructor(
         }
 
         companion object CREATOR : Parcelable.Creator<SavedState> {
-            override fun createFromParcel(parcel: Parcel): SavedState = SavedState(parcel)
+            override fun createFromParcel(parcel: Parcel) = SavedState(parcel)
             override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
         }
 

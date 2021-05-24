@@ -142,7 +142,10 @@ class ArticleViewModel(private val articleId: String, savedStateHandle: SavedSta
         query ?: return
 
         val result = currentState.content.firstOrNull().indexesOf(query)
-            .map{ it to it + query.length}
+            .map{
+                Log.d("Indexes", "start= $it end=${it + query.length}")
+                it to it + query.length
+            }
 
         updateState { it.copy(searchQuery = query, searchResults = result) }
     }

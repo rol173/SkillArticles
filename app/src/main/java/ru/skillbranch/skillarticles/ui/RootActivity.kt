@@ -9,7 +9,6 @@ import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.viewModels
@@ -164,10 +163,12 @@ class RootActivity : AppCompatActivity(), IArticleView {
             btnSettings.setOnClickListener { viewModel.handleToggleMenu() }
 
             btnResultUp.setOnClickListener {
+                vb.tvTextContent.requestFocus()
                 searchView.clearFocus()
                 viewModel.handleUpResult()
             }
             btnResultDown.setOnClickListener {
+                vb.tvTextContent.requestFocus()
                 searchView.clearFocus()
                 viewModel.handleDownResult()
             }
@@ -205,10 +206,10 @@ class RootActivity : AppCompatActivity(), IArticleView {
 
         with(vb.tvTextContent) {
             textSize = if (data.isBigText) 18f else 14f
-            val content = if (data.isLoadingContent) "loading" else data.content.first()
-            setText(content as CharSequence, TextView.BufferType.SPANNABLE)
-            if (text.toString() == content) return@with
             movementMethod = ScrollingMovementMethod()
+            val content = if (data.isLoadingContent) "loading" else data.content.first()
+            if (text.toString() == content) return@with
+            setText(content as CharSequence, TextView.BufferType.SPANNABLE)
         }
 
         //bind toolbar
@@ -246,7 +247,6 @@ class RootActivity : AppCompatActivity(), IArticleView {
         val content = vb.tvTextContent.text as Spannable
 
         clearSearchResult()
-
         searchResult.forEach {(start, end) ->
             content.setSpan(
                 SearchSpan(bgColor, fgColor),
@@ -268,7 +268,7 @@ class RootActivity : AppCompatActivity(), IArticleView {
             .forEach { content.removeSpan(it) }
 
         if (spans.isNotEmpty()) {
-            Log.d("Spans", "select $searchPosition")
+
             //find position span
             val result = spans[searchPosition]
             //move to selection

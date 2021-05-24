@@ -1,5 +1,7 @@
 package ru.skillbranch.skillarticles.extensions
 
+import android.util.Log
+
 fun String?.indexesOf(
     substr: String,
     ignoreCase: Boolean = true
@@ -11,4 +13,5 @@ fun String?.indexesOf(
     }
 
     return emptyList()
+
 }

@@ -8,6 +8,6 @@ fun ArticleState.toAppSettings() : AppSettings {
     return AppSettings(isDarkMode,isBigText)
 }
 
-fun ArticleState.toArticlePersonalInfo(): ArticlePersonalInfo {
+fun ArticleState.toArticlePersonalInfo(): ArticlePersonalInfo{
     return ArticlePersonalInfo(isLike, isBookmark)
 }

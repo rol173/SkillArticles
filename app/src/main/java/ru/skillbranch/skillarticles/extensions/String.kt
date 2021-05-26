@@ -8,6 +8,7 @@ fun String?.indexesOf(
 ): List<Int> {
 
     this?.let {
+        if (substr.isNullOrBlank()) return emptyList()
         val regex = if (ignoreCase) Regex(substr, RegexOption.IGNORE_CASE) else Regex(substr)
         return regex.findAll(this).map { it.range.first }.toList()
     }

@@ -60,7 +60,7 @@ class RootActivity : AppCompatActivity(), IArticleView {
         setupSubmenu()
 
         viewModel.observeState(this, ::renderUi)
-        viewModel.observeSubState(this, ArticleState::toBottombarData, ::renderBotombar)
+        viewModel.observeSubState(this, ArticleState::toBottombarData, ::renderBottombar)
         viewModel.observeSubState(this, ArticleState::toSubmenuData, ::renderSubmenu)
 
         viewModel.observeNotifications(this) {
@@ -178,7 +178,7 @@ class RootActivity : AppCompatActivity(), IArticleView {
         }
     }
 
-    override fun renderBotombar(data: BottombarData) {
+    override fun renderBottombar(data: BottombarData) {
         with(vbBottomBar) {
             btnSettings.isChecked = data.isShowMenu
             btnLike.isChecked = data.isLike
